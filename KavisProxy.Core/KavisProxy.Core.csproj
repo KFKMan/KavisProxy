@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Packets\Login\Client\" />
+    <Compile Remove="Protocol\Packets\Login\Client\**" />
+    <EmbeddedResource Remove="Protocol\Packets\Login\Client\**" />
+    <None Remove="Protocol\Packets\Login\Client\**" />
   </ItemGroup>
 
 </Project>
