@@ -1,4 +1,8 @@
-﻿namespace KavisProxy.Core
+﻿using System;
+using System.Numerics;
+using System.Text;
+
+namespace KavisProxy.Core
 {
     public class ByteBuffer
     {
@@ -45,32 +49,32 @@
 
         public void WriteShort(short value)
         {
-            
+            WriteBytes(BitConverter.GetBytes(value));
         }
 
         public void WriteUnsignedShort(ushort value)
         {
-
+            WriteBytes(BitConverter.GetBytes(value));
         }
 
         public void WriteInt(int value)
         {
-
+            WriteBytes(BitConverter.GetBytes(value));
         }
 
         public void WriteLong(long value)
         {
-
+            WriteBytes(BitConverter.GetBytes(value));
         }
 
         public void WriteFloat(float value)
         {
-
+            WriteBytes(BitConverter.GetBytes(value));
         }
 
         public void WriteDouble(double value)
         {
-
+            WriteBytes(BitConverter.GetBytes(value));
         }
 
         public void WriteUUID(Guid value)
@@ -78,12 +82,42 @@
             WriteBytes(value.ToByteArray());
         }
 
-        public void WritePosition(int x,int y, int z)
+        public void WritePosition(Vector3Int position)
         {
-            var X = ((x & 0x3FFFFFF) << 38);
-            var Y = ((y & 0xFFF) << 26);
-            var Z = (z & 0x3FFFFFF);
-            
+            long value = ((long)(position.X & 0x3FFFFFF) << 38) | ((long)(position.Y & 0xFFF) << 26) | (position.Z & 0x3FFFFFF);
+            WriteLong(value);
+        }
+
+        public void WriteVarInt(int value)
+        {
+            while ((value & -128) != 0)
+            {
+                WriteByte((byte)(value & 127 | 128));
+                value >>= 7;
+            }
+            WriteByte((byte)value);
+        }
+
+        public void WriteVarLong(long value)
+        {
+            while ((value & -128L) != 0L)
+            {
+                WriteByte((byte)(value & 127L | 128L));
+                value >>= 7;
+            }
+            WriteByte((byte)value);
+        }
+
+        public void WriteAngle(byte angle)
+        {
+            WriteByte(angle);
+        }
+
+        public void WriteString(string value)
+        {
+            byte[] bytes = Encoding.UTF8.GetBytes(value);
+            WriteVarInt(bytes.Length);
+            WriteBytes(bytes);
         }
 
         public byte ReadByte(bool AddToIndex = true)
@@ -210,6 +244,67 @@
             return new Guid(ReadBytes(16).AsSpan());
         }
 
+        public int ReadVarInt()
+        {
+            int numRead = 0;
+            int result = 0;
+            byte read;
+            do
+            {
+                read = ReadByte();
+                int value = read & 0b01111111;
+                result |= value << (7 * numRead);
 
+                numRead++;
+                if (numRead > 5)
+                {
+                    throw new Exception("VarInt is too big");
+                }
+            } while ((read & 0b10000000) != 0);
+
+            return result;
+        }
+
+        public long ReadVarLong()
+        {
+            int numRead = 0;
+            long result = 0;
+            byte read;
+            do
+            {
+                read = ReadByte();
+                long value = read & 0b01111111L;
+                result |= value << (7 * numRead);
+
+                numRead++;
+                if (numRead > 10)
+                {
+                    throw new Exception("VarLong is too big");
+                }
+            } while ((read & 0b10000000) != 0);
+
+            return result;
+        }
+
+        public Vector3Int ReadPosition()
+        {
+            long value = ReadLong();
+            int x = (int)(value >> 38);
+            int y = (int)((value >> 26) & 0xFFF);
+            int z = (int)(value << 38 >> 38); // sign-extend
+            return new Vector3Int(x, y, z);
+        }
+
+        public byte ReadAngle()
+        {
+            return ReadByte();
+        }
+
+        public string ReadString()
+        {
+            int lenght = ReadVarInt();
+            var str = ReadBytes(lenght);
+            return Encoding.UTF8.GetString(str);
+        }
     }
 }
