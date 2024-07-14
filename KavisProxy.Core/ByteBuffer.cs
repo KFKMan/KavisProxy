@@ -4,7 +4,7 @@ using System.Text;
 
 namespace KavisProxy.Core
 {
-    public class ByteBuffer
+    public class ByteBuffer : IByteBuffer
     {
         private MemoryStream Data;
         private int Index = 0;
@@ -15,6 +15,22 @@ namespace KavisProxy.Core
             Data = new MemoryStream();//data.ToList();
         }
 
+        public byte[] ToArray()
+        {
+            return Data.ToArray();
+        }
+
+        public byte[] ToArrayWithCurrentIndex()
+        {
+            var size = Data.Length - Index;
+
+            byte[] array = new byte[size];
+
+            Data.Read(array, Index, (int)size);
+
+            return array;
+        }
+
         public void WriteByte(byte data)
         {
             Data.WriteByte(data);
@@ -22,7 +38,7 @@ namespace KavisProxy.Core
 
         public void WriteBytes(byte[] data)
         {
-            Data.Write(data,(int)Data.Length, data.Length);
+            Data.Write(data, (int)Data.Length, data.Length);
         }
 
         public void WriteBool(bool value)
