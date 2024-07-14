@@ -11,7 +11,7 @@ public class Handshake : Packet<HandshakeData>
         var protocolVersion = buffer.ReadVarInt();
         var serverAddress = buffer.ReadString();
         var serverPort = buffer.ReadUnsignedShort();
-        var nextState = (NextStateEnum)buffer.ReadVarInt();
+        var nextState = buffer.ReadVarInt();
 
         return new(protocolVersion, serverAddress, serverPort, nextState);
     }
@@ -21,16 +21,32 @@ public class Handshake : Packet<HandshakeData>
         buffer.WriteVarInt(value.ProtocolVersion);
         buffer.WriteString(value.ServerAddress);
         buffer.WriteUnsignedShort(value.ServerPort);
-        buffer.WriteVarInt((int)value.NextState);
+        buffer.WriteVarInt(value.NextState);
     }
 }
 
-public record HandshakeData(int ProtocolVersion, string ServerAddress, ushort ServerPort, NextStateEnum NextState)
+public record HandshakeData(int ProtocolVersion, string ServerAddress, ushort ServerPort, int NextState)
 {
-    public enum NextStateEnum
+    public enum NextStateEnum : int
     {
-        Status,
-        Login,
-        Unhandled
+        Status = 1,
+        Login = 2,
+        /// <summary>
+        /// There is no really value like that
+        /// </summary>
+        Unhandled = 3
+    }
+
+    public NextStateEnum GetNextStateType()
+    {
+        switch (NextState)
+        {
+            case (int)NextStateEnum.Status:
+                return NextStateEnum.Status;
+            case (int)NextStateEnum.Login:
+                return NextStateEnum.Login;
+            default:
+                return NextStateEnum.Unhandled;
+        }
     }
 }

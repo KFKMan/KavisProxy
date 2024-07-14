@@ -2,6 +2,7 @@
 
 public interface IByteBuffer
 {
+    int GetReadedCount();
     byte ReadAngle();
     bool ReadBool();
     byte ReadByte(bool AddToIndex = true);

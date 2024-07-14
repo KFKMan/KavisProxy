@@ -2,10 +2,21 @@
 
 namespace KavisProxy.Core.Protocol;
 
-public class ByteBuffer : IDisposable
+public class StreamByteBuffer
+{
+
+}
+
+public class ByteBuffer : IByteBuffer, IDisposable
 {   
     Stream stream;
+    int readed = 0;
     int currrentPos = 0; // There can be a split into a write and read indices
+
+    public ByteBuffer(Stream stream, int currrentPos) : this(stream)
+    {
+        this.currrentPos = currrentPos;
+    }
 
     public ByteBuffer(Stream stream) => this.stream = stream;
 
@@ -14,6 +25,11 @@ public class ByteBuffer : IDisposable
         stream = new MemoryStream();
         WriteBytes(data);
         stream.Position = 0;
+    }
+
+    public int GetReadedCount()
+    {
+        return readed;
     }
 
     public void WriteByte(byte data) => stream.WriteByte(data);
@@ -83,7 +99,10 @@ public class ByteBuffer : IDisposable
         stream.Position = currrentPos;
         var value = (byte)stream.ReadByte();
         if (AddToIndex)
+        {
             currrentPos += 1;
+            readed += 1;
+        }
 
         return value;
     }
@@ -97,7 +116,10 @@ public class ByteBuffer : IDisposable
         stream.Position = currrentPos;
         stream.Read(array, 0, count);
         if (AddToIndex)
+        {
             currrentPos += count;
+            readed += count;
+        }
 
         return array;
     }
@@ -196,4 +218,20 @@ public class ByteBuffer : IDisposable
     }
 
     public void Dispose() => stream.Dispose();
+
+    public byte[] ToArray()
+    {
+        int length = (int)stream.Length;
+        byte[] data = new byte[length];
+        stream.Read(data, 0, length);
+        return data;
+    }
+
+    public byte[] ToArrayWithCurrentIndex()
+    {
+        int length = (int)stream.Length - currrentPos;
+        byte[] data = new byte[length];
+        stream.Read(data, currrentPos, length);
+        return data;
+    }
 }
