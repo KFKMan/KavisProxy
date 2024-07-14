@@ -2,37 +2,126 @@
 {
     public class ByteBuffer
     {
-        private List<byte> Data = new(); //it's need to be changed
+        private MemoryStream Data;
         private int Index = 0;
 
         public ByteBuffer() { }
         public ByteBuffer(byte[] data)
         {
-            Data = data.ToList();
+            Data = new MemoryStream();//data.ToList();
+        }
+
+        public void WriteByte(byte data)
+        {
+            Data.WriteByte(data);
         }
 
         public void WriteBytes(byte[] data)
         {
-            Data.AddRange(data);
+            Data.Write(data,(int)Data.Length, data.Length);
+        }
+
+        public void WriteBool(bool value)
+        {
+            if (value)
+            {
+                WriteByte(0x01);
+            }
+            else
+            {
+                WriteByte(0x00);
+            }
+        }
+
+        public void WriteByteInt(sbyte value)
+        {
+            WriteByte((byte)value);
+        }
+
+        public void WriteByteUnsigned(byte value) //WriteByte and WriteByteUnsigned is equal
+        {
+            WriteByte(value);
+        }
+
+        public void WriteShort(short value)
+        {
+            
+        }
+
+        public void WriteUnsignedShort(ushort value)
+        {
+
+        }
+
+        public void WriteInt(int value)
+        {
+
+        }
+
+        public void WriteLong(long value)
+        {
+
+        }
+
+        public void WriteFloat(float value)
+        {
+
+        }
+
+        public void WriteDouble(double value)
+        {
+
+        }
+
+        public void WriteUUID(Guid value)
+        {
+            WriteBytes(value.ToByteArray());
+        }
+
+        public void WritePosition(int x,int y, int z)
+        {
+            var X = ((x & 0x3FFFFFF) << 38);
+            var Y = ((y & 0xFFF) << 26);
+            var Z = (z & 0x3FFFFFF);
+            
+        }
+
+        public byte ReadByte(bool AddToIndex = true)
+        {
+            if (Data.Length < 1 + Index)
+            {
+                throw new EndOfStreamException("End of stream reached.");
+            }
+
+            Data.Position = Index;
+            var value = (byte)Data.ReadByte();
+            if (AddToIndex)
+            {
+                Index += 1;
+            }
+            return value;
         }
 
         public byte[] ReadBytes(int count, bool AddToIndex = true)
         {
-            if (Data.Count < count + Index)
+            if (Data.Length < count + Index)
             {
-                throw new StackOverflowException();
+                throw new EndOfStreamException("End of stream reached.");
             }
-            var array = Data.GetRange(Index, count);
+
+            var array = new byte[count];
+            Data.Position = Index;
+            Data.Read(array, 0, count);
             if (AddToIndex)
             {
                 Index += count;
             }
-            return array.ToArray();
+            return array;
         }
 
         public bool ReadBool()
         {
-            byte data = ReadBytes(1)[0];
+            byte data = ReadByte();
             return data == 0x01;
         }
 
@@ -45,7 +134,7 @@
             sbyte a = 128; //Error
             */
 
-            return (sbyte)ReadBytes(0)[0];
+            return (sbyte)ReadByte();
         }
 
         public byte ReadByteUnsigned()
@@ -56,7 +145,7 @@
             byte a = 255;
             byte a = 256; //Error
             */
-            return ReadBytes(1)[0];
+            return ReadByte();
         }
 
         public short ReadShort()
