@@ -16,4 +16,3 @@ public class SetCompression : Packet<SetCompressionData>
 }
 
 public record SetCompressionData(int Threshold);
-}

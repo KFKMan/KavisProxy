@@ -38,9 +38,7 @@ public class ByteBuffer : IByteBuffer, IDisposable
 
     public void WriteBool(bool value) => WriteByte((byte)(value ? 1 : 0));
 
-    public void WriteByteInt(sbyte value) => WriteByte((byte)value);
-
-    public void WriteByteUnsigned(byte value) => WriteByte(value);
+    public void WriteByteSigned(sbyte value) => WriteByte((byte)value);
 
     public void WriteShort(short value) => WriteBytes(BitConverter.GetBytes(value));
 
@@ -130,11 +128,8 @@ public class ByteBuffer : IByteBuffer, IDisposable
         return data == 0x01;
     }
 
-    /// <returns>Value from -128 to 127 inclusive</returns>
-    public sbyte ReadByteInt() => (sbyte)ReadByte();
-
     /// <returns>Value from 0 to 255 inclusive</returns>
-    public byte ReadByteUnsigned() => ReadByte();
+    public sbyte ReadByteSigned() => (sbyte)ReadByte();
 
     /// <returns>Value from 32768 to 32767 inclusive</returns>
     public short ReadShort() => BitConverter.ToInt16(ReadBytes(2));

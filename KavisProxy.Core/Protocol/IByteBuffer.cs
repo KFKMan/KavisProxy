@@ -6,9 +6,8 @@ public interface IByteBuffer
     byte ReadAngle();
     bool ReadBool();
     byte ReadByte(bool AddToIndex = true);
-    sbyte ReadByteInt();
     byte[] ReadBytes(int count, bool AddToIndex = true);
-    byte ReadByteUnsigned();
+    sbyte ReadByteSigned();
     double ReadDouble();
     float ReadFloat();
     int ReadInt();
@@ -25,9 +24,8 @@ public interface IByteBuffer
     void WriteAngle(byte angle);
     void WriteBool(bool value);
     void WriteByte(byte data);
-    void WriteByteInt(sbyte value);
     void WriteBytes(byte[] data);
-    void WriteByteUnsigned(byte value);
+    void WriteByteSigned(sbyte value);
     void WriteDouble(double value);
     void WriteFloat(float value);
     void WriteInt(int value);
