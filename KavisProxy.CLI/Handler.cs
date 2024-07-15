@@ -1,6 +1,7 @@
 ﻿using KavisProxy.Core.Protocol;
 using System;
 using System.Collections.Generic;
+using System.IO.Compression;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -57,7 +58,19 @@ namespace KavisProxy.CLI
             {
                 int PacketLength = buffer.ReadVarInt();
                 int DataLength = buffer.ReadVarInt();
-                //Decompression Mechanic
+                //Decompression Mechanic (it can be more dry..)
+                byte[] PacketIDDataRaw = buffer.ReadBytes(PacketLength);
+                byte[] PacketIDDataDecompressed = ZLibHelper.Decompress(PacketIDDataRaw);
+                int PacketId;
+                using(ByteBuffer buff = new ByteBuffer(PacketIDDataDecompressed))
+                {
+                    PacketId = buff.ReadVarInt();
+                }
+
+                byte[] DataRaw = buffer.ReadBytes(DataLength);
+                byte[] Data = ZLibHelper.Decompress(DataRaw);
+
+                return new PacketData(PacketId, new ByteBuffer(Data));
             }
             else
             {
@@ -67,6 +80,22 @@ namespace KavisProxy.CLI
                 return new PacketData(PacketId, new ByteBuffer(Data));
             }
         }
+    }
+
+    public class ZLibHelper
+    {
+        public static byte[] Decompress(byte[] data,CompressionLevel level = CompressionLevel.Optimal)
+        {
+            using (MemoryStream ms = new MemoryStream(data))
+            {
+                using (ZLibStream stream = new ZLibStream(ms, CompressionLevel.Optimal))
+                {
+                    ByteBuffer buffer = new ByteBuffer(stream);
+                    return buffer.ToArray();
+                }
+            }
+        }
+
     }
 
     public interface IPacketData
