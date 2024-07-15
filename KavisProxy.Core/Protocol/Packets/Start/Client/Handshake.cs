@@ -4,7 +4,7 @@ namespace KavisProxy.Core.Protocol.Packets;
 
 public class Handshake : Packet<HandshakeData>
 {
-    public byte PacketID => 0;
+    public int PacketID => 0;
 
     public HandshakeData Read(IByteBuffer buffer)
     {

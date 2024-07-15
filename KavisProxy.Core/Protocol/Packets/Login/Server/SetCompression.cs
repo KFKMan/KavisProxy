@@ -2,7 +2,7 @@
 
 public class SetCompression : Packet<SetCompressionData>
 {
-    public byte PacketID => 3;
+    public int PacketID => 3;
 
     public SetCompressionData Read(IByteBuffer buffer)
     {
@@ -15,12 +15,5 @@ public class SetCompression : Packet<SetCompressionData>
     }
 }
 
-public class SetCompressionData
-{
-    public SetCompressionData(int threshold)
-    {
-        Threshold = threshold;
-    }
-
-    public int Threshold;
+public record SetCompressionData(int Threshold);
 }

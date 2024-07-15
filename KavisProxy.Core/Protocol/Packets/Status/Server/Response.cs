@@ -2,5 +2,5 @@
 
 public class Response : Packet
 {
-    public byte PacketID => 0;
+    public int PacketID => 0;
 }

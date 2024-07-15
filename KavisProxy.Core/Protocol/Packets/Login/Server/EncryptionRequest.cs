@@ -2,7 +2,7 @@
 
 public class EncryptionRequest : Packet<EncryptionRequestData>
 {
-    public byte PacketID => 1;
+    public int PacketID => 1;
 
     public void Write(IByteBuffer buffer, EncryptionRequestData value)
     {

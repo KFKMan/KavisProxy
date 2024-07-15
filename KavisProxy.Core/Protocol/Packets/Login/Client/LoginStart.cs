@@ -9,7 +9,7 @@ namespace KavisProxy.Core.Protocol.Packets;
 
 public class LoginStart : Packet<LoginStartData>
 {
-    public byte PacketID => 0;
+    public int PacketID => 0;
 
     public LoginStartData Read(IByteBuffer buffer)
     {
@@ -22,12 +22,4 @@ public class LoginStart : Packet<LoginStartData>
     }
 }
 
-public class LoginStartData
-{
-    public LoginStartData(string name)
-    {
-        Name = name;
-    }
-
-    public string Name;
-}
+public record LoginStartData(string Name);

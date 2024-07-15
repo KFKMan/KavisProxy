@@ -2,7 +2,7 @@
 
 public class Ping : Packet<PingData>
 {
-    public byte PacketID => 1;
+    public int PacketID => 1;
 
     public PingData Read(IByteBuffer buffer) => new(buffer.ReadLong());
 

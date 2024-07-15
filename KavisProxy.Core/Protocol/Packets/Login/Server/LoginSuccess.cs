@@ -2,7 +2,7 @@
 
 public class LoginSuccess : Packet<LoginData>
 {
-    public byte PacketID => 2;
+    public int PacketID => 2;
 
     public LoginData Read(IByteBuffer buffer)
     {
@@ -16,17 +16,9 @@ public class LoginSuccess : Packet<LoginData>
     }
 }
 
-public class LoginData
-{
-    public LoginData(string uuid, string username)
-    {
-        UUID = uuid;
-        Username = username;
-    }
-
-    /// <summary>
-    /// UUID as string with hyphens.
-    /// </summary>
-    public string UUID;
-    public string Username;
-}
+/// <summary>
+/// 
+/// </summary>
+/// <param name="UUID">UUID as string with hyphens.</param>
+/// <param name="Username"></param>
+public record LoginData(string UUID, string Username);

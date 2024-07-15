@@ -5,7 +5,7 @@
 
 public interface Packet
 {
-    public byte PacketID { get; }
+    public int PacketID { get; }
 }
 
 public interface Packet<T> : Packet where T : class

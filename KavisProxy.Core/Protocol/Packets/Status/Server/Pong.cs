@@ -2,7 +2,7 @@
 
 public class Pong : Packet<PongData>
 {
-    public byte PacketID => 1;
+    public int PacketID => 1;
 
     public PongData Read(IByteBuffer buffer) => new(buffer.ReadLong());
 

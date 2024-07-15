@@ -2,7 +2,7 @@
 
 public class EncryptionResponse : Packet<EncryptionResponseData>
 {
-    public byte PacketID => 1;
+    public int PacketID => 1;
 
     public EncryptionResponseData Read(IByteBuffer buffer)
     {
@@ -23,19 +23,4 @@ public class EncryptionResponse : Packet<EncryptionResponseData>
     }
 }
 
-public class EncryptionResponseData
-{
-    public EncryptionResponseData(int sharedSecretLength, byte[] sharedSecret, int verifyTokenLength, byte[] verifyToken)
-    {
-        SharedSecretLength = sharedSecretLength;
-        SharedSecret = sharedSecret;
-        VerifyTokenLength = verifyTokenLength;
-        VerifyToken = verifyToken;
-    }
-
-
-    public int SharedSecretLength;
-    public byte[] SharedSecret;
-    public int VerifyTokenLength;
-    public byte[] VerifyToken;
-}
+public record EncryptionResponseData(int SharedSecretLength, byte[] SharedSecret, int VerifyTokenLength, byte[] VerifyToken);
