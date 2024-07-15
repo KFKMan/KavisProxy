@@ -1,4 +1,5 @@
 ﻿using KavisProxy.Core.Protocol;
+using KavisProxy.Core.Protocol.Packets;
 using System;
 using System.Collections.Generic;
 using System.IO.Compression;
@@ -20,9 +21,38 @@ namespace KavisProxy.CLI
             PacketReader = new(Stream,ConnectionData);
         }
 
-        public async Task Handle()
+        public async Task HandleClient()
         {
+            while (true)
+            {
+                var packet = await PacketReader.GetPacket();
 
+                if (!ConnectionData.Handshake)
+                {
+                    var handshake = new Handshake().Read(packet.Data);
+                    ConnectionData.NextState = handshake.GetNextStateType();
+                    ConnectionData.Handshake = true;
+                    continue;
+                }
+
+                if(ConnectionData.NextState != HandshakeData.NextStateEnum.Unhandled)
+                {
+                    if(ConnectionData.NextState == HandshakeData.NextStateEnum.Login)
+                    {
+                        var lgStart = new LoginStart();
+                        if(packet.PacketID == lgStart.PacketID)
+                        {
+
+                        }
+                    }
+                    else if(ConnectionData.NextState == HandshakeData.NextStateEnum.Status)
+                    {
+
+                    }
+                    ConnectionData.NextState = HandshakeData.NextStateEnum.Unhandled;
+                    continue;
+                }
+            }
         }
 
         public ConnectionData ConnectionData;
@@ -120,5 +150,7 @@ namespace KavisProxy.CLI
     public class ConnectionData
     {
         public bool CompressionEnabled = false;
+        public bool Handshake = false;
+        public HandshakeData.NextStateEnum NextState = HandshakeData.NextStateEnum.Unhandled;
     }
 }
