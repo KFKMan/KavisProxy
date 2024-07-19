@@ -4,6 +4,16 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Description>Minecraft Packet Controller for V47 (1.8.9)</Description>
+    <NeutralLanguage>en</NeutralLanguage>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageProjectUrl>https://github.com/KFKMan/KavisProxy</PackageProjectUrl>
+    <Company />
+    <Copyright>Kaan Faruk Kınalı, Yoticc</Copyright>
+    <Authors>KaanFK,Yotic</Authors>
+    <Title>Minecraft Packet Controller</Title>
   </PropertyGroup>
 
   <ItemGroup>

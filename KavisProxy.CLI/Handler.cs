@@ -1,28 +1,180 @@
-﻿using KavisProxy.Core.Protocol;
+﻿using Hook;
+using KavisProxy.Core.Protocol;
 using KavisProxy.Core.Protocol.Packets;
 using System;
 using System.Collections.Generic;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using static KavisProxy.CLI.HookHelper;
+using SOCKET = nint;
 
 namespace KavisProxy.CLI
 {
+	public class HookHelper
+    {
+		public static IPAddress UintToIPAddress(uint ipAddressAsUint)
+		{
+			byte[] bytes = BitConverter.GetBytes(ipAddressAsUint);
+			Array.Reverse(bytes);
+			return new IPAddress(bytes);
+		}
+
+		public enum AddressFamily
+		{
+			AppleTalk = 0x11,
+			BlueTooth = 0x20,
+			InterNetworkv4 = 2,
+			InterNetworkv6 = 0x17,
+			Ipx = 4,
+			Irda = 0x1a,
+			NetBios = 0x11,
+			Unknown = 0
+		}
+
+		public enum ProtocolType
+		{
+			BlueTooth = 3,
+			ReliableMulticast = 0x71,
+			Tcp = 6,
+			Udp = 0x11
+		}
+
+		[StructLayout(LayoutKind.Sequential, Size = 16)]
+		public unsafe struct sockaddr_in
+		{
+			public const int Size = 16;
+
+			public short sin_family;
+			public ushort sin_port;
+			
+			public in_addr* sin_addr;
+		}
+
+		public struct in_addr
+		{
+			public uint S_addr;
+			public struct _S_un_b
+			{
+				public byte s_b1, s_b2, s_b3, s_b4;
+			}
+			public _S_un_b S_un_b;
+			public struct _S_un_w
+			{
+				public ushort s_w1, s_w2;
+			}
+			public _S_un_w S_un_w;
+		}
+
+		public enum SocketType
+		{
+			Unknown,
+			Stream,
+			DGram,
+			Raw,
+			Rdm,
+			SeqPacket
+		}
+	}
+
+	public unsafe class HookSystem
+    {
+        public HookSystem()
+        {
+			Base = Interop.GetModuleHandle("ws2_32");
+            WSConnect = (delegate* unmanaged<SOCKET, sockaddr_in*, int, void>)((IntPtr)Interop.GetProcAddress(Base, "connect")).ToPointer();
+            ConnectHook = new HookFunction(WSConnect, (delegate* unmanaged<SOCKET, sockaddr_in*, int, void>)&ConnectHandler);
+        }
+
+        //void connect(SOCKET socket, sockaddr* addr, int namelen)
+
+        public nint Base;
+        public HookFunction ConnectHook;
+
+        public unsafe delegate* unmanaged<SOCKET, sockaddr_in*, int, void> WSConnect;
+
+		[UnmanagedCallersOnly]
+		public static void ConnectHandler(SOCKET socket, sockaddr_in* sockaddress, int length)
+        {
+            var IPAsUInt = sockaddress->sin_addr->S_addr;
+
+			IPAddress ip = HookHelper.UintToIPAddress(IPAsUInt);
+			int port = sockaddress->sin_port; //ushort
+            LogManger.WriteLine($"Connection Request Getted {socket.ToString()} | {ip}:{port}");
+            if(Sockets.TryGetValue(socket,out Handler server))
+            {
+                //There is already connection, just redirection
+            }
+            else
+            {
+                var handler = new Handler(ip.ToString(), port);
+                var directto = handler.CreateFakeServer();
+
+
+                //var lgserver = new Handler();
+
+            }
+        }
+
+        public static Dictionary<nint, Handler> Sockets = new();
+	}
+
+    public class LoginServer
+    {
+        public LoginServer()
+        {
+            Random.Shared.NextBytes(VerifyToken);
+            var rsa = RSA.Create(1024);
+            PublicKey = rsa.ExportRSAPublicKey();
+            PrivateKey = rsa.ExportRSAPrivateKey();
+		}
+
+        public byte[] VerifyToken = new byte[4];
+        public byte[] PublicKey;
+        public byte[] PrivateKey;
+    }
+
     public class Handler
     {
-        private NetworkStream Stream;
+        private TcpListener FakeServer;
+        private LoginServer FakeServerCrypter = new();
 
-        public Handler(NetworkStream stream)
+        private NetworkStream Stream;
+        private string TargetIP;
+        private int TargetPort;
+
+        public Handler(string targetIP,int targetPORT)
         {
-            Stream = stream;
             ConnectionData = new();
             PacketReader = new(Stream,ConnectionData);
+            TargetIP = targetIP;
+            TargetPort = targetPORT;
+        }
+
+        public IPEndPoint CreateFakeServer()
+        {
+            FakeServer = new TcpListener(IPAddress.Parse("127.0.0.1"), 0); //0 for auto selecting port;
+            FakeServer.Start();
+            return (IPEndPoint)FakeServer.LocalEndpoint;
+        }
+
+
+
+        private TcpClient RealServerConnection = new TcpClient();
+
+        public async Task HandleServer()
+        {
+            RealServerConnection.Connect(TargetIP, TargetPort);
         }
 
         public async Task HandleClient()
         {
+            HandleServer();
             while (true)
             {
                 var packet = await PacketReader.GetPacket();
@@ -42,7 +194,7 @@ namespace KavisProxy.CLI
                         var lgStart = new LoginStart();
                         if(packet.PacketID == lgStart.PacketID)
                         {
-
+                            
                         }
                     }
                     else if(ConnectionData.NextState == HandshakeData.NextStateEnum.Status)

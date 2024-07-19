@@ -6,7 +6,7 @@ public class EntityEquipment : Packet<EntityEquipmentData>
 
     public EntityEquipmentData Read(IByteBuffer buffer)
     {
-        return new(buffer.ReadVarInt(), buffer.ReadShort(), new(buffer.ReadShort(), buffer.ReadByte(), buffer.ReadShort()));
+        return new(buffer.ReadVarInt(), buffer.ReadShort(), new(buffer.ReadShort(), buffer.ReadByte(), buffer.ReadShort(),NBTTagCompound.Empty));
     }
 
     public void Write(IByteBuffer buffer, EntityEquipmentData value)
@@ -36,7 +36,9 @@ public class NBTTagController
         else
         {
             //Handling
+            return NBTTagCompound.Empty;
         }
+        
     }
 }
 

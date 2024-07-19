@@ -5,7 +5,13 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Korn" Version="0.0.1-dev" />
+    <PackageReference Include="Yotic.Hook" Version="2.0.7" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\KavisProxy.Core\KavisProxy.Core.csproj" />
